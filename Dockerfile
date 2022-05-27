@@ -6,4 +6,6 @@ RUN apt install -y git && apt install -y openjdk-18-jdk
 RUN wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 RUN java -Xmx512M -Xms512M -jar BuildTools.jar
 RUN ls | grep -v spigot | xargs -i{} rm -rf {}
-CMD ["sh", "run.sh"]
+RUN apt install -y screen
+WORKDIR /root
+CMD ["screen", "sh", "run.sh"]
