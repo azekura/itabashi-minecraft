@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  mcserver:
+    image: itabashi/mcserver
+    volumes:
+      - './var:/mnt/var'
+    ports:
+      - '25565:25565'
+    tty: true
+    stdin_open: true
