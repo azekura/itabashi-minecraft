@@ -6,6 +6,7 @@ services:
     volumes:
       - './var:/root'
     ports:
+      - '19132:19132'
       - '25565:25565'
     tty: true
     stdin_open: true
