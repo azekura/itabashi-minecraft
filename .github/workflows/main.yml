@@ -1,0 +1,35 @@
+name: "Deploy: main"
+
+on: [ workflow_dispatch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        id: extract_branch
+
+      - name: Push to AWS CodeCommit
+        env:
+          CODECOMMIT_HOST: git-codecommit.ap-northeast-1.amazonaws.com # ap-northeast-1の部分は自身のリージョンを指定
+          CODECOMMIT_REPO_URL: ${{ secrets.CODECOMMIT_REPO_URL }}
+          CODECOMMIT_SSH_CONFIG: ${{ secrets.CODECOMMIT_SSH_CONFIG }}
+          CODECOMMIT_SSH_PRIVATE_KEY: ${{ secrets.CODECOMMIT_SSH_PRIVATE_KEY }}
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+        shell: bash
+        run: |
+          mkdir ~/.ssh
+          echo "$CODECOMMIT_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          echo "$CODECOMMIT_SSH_CONFIG" > ~/.ssh/config && chmod 600 ~/.ssh/config
+          ssh-keyscan "$CODECOMMIT_HOST" >> ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+          git remote add codecommit "$CODECOMMIT_REPO_URL"
+          git push codecommit ${{ env.BRANCH_NAME }}:main -f # mainの部分はCodeCommitの同期したいブランチを指定
